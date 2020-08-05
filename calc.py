@@ -1,17 +1,18 @@
 from datetime import datetime
 
 data = '990801401668'
-data_list = list(data)
 
-weight = [1,2,3,4,5,6,7,8,9,10,11]
-c_digit = 0
+bday = f'20{data[0:2]}-{data[2:4]}-{data[4:6]}'
+gender = data[6]
 
-for i in range(11):
+bday_date = datetime.strptime(bday, '%Y-%m-%d').date()
+curr_date = datetime.now().date()
 
-    mult = weight[i]*int(data_list[i])
-    c_digit += mult
+if curr_date < bday_date:
+    bday = f'19{data[0:2]}-{data[2:4]}-{data[4:6]}'
 
-c_digit = c_digit%11
+datetime.strptime(bday, '%Y-%m-%d').date()
 
+iin_data = {'gender': gender, 'date_of_birth': bday}
 
-
+print(iin_data)

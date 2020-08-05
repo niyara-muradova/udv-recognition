@@ -36,16 +36,26 @@ def get_data_udv(data):
     doc_num = data[IDKAZ:IDKAZ + num_len]
     iin = data[IDKAZ + num_len:iin_len + IDKAZ + num_len]
 
-    calculate_iin(iin)
+    datas = calculate_iin(iin)
 
+
+    print(surname)
+    print(name)
+    print(iin)
+    print(doc_num)
+    print(datas)
 
 def calculate_iin(data):
     if len(data) == 12:
         c_dig = control_digit(data)
-        if c_dig==data[-1]:
-            pass
+        if c_dig == int(data[-1]):
+            iin_data = iin_info(data)
+        else:
+            iin_data = {'gender': None, 'date_of_birth': None, 'additional': '[Ошибка контрольного разряда]'}
     else:
-        return
+        iin_data = {'gender': None, 'date_of_birth': None, 'additional': '[Несоответствие формата ИИН]'}
+
+    return iin_data
 
 
 def control_digit(data):
@@ -68,7 +78,6 @@ def iin_info(data):
 
     bday = f'20{data[0:2]}-{data[2:4]}-{data[4:6]}'
     gender = data[6]
-    control_digit = data[-1]
 
     bday_date = datetime.strptime(bday, '%Y-%m-%d').date()
     curr_date = datetime.now().date()
@@ -76,9 +85,11 @@ def iin_info(data):
     if curr_date < bday_date:
         bday = f'19{data[0:2]}-{data[2:4]}-{data[4:6]}'
 
-    bday = datetime.strptime(bday, '%Y-%m-%d').date()
+    datetime.strptime(bday, '%Y-%m-%d').date()
 
     iin_data = {'gender': gender, 'date_of_birth': bday, 'additional': additional}
+
+    return iin_data
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -97,10 +108,10 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
 
+            file.save(os.path.join(f'{app.config["UPLOAD_FOLDER"]}/', filename))
+
             doc = photo_recog(filename)
             get_data_udv(doc)
-
-            file.save(os.path.join(f'{app.config["UPLOAD_FOLDER"]}/', filename))
 
             return redirect(url_for('upload_file', filename=filename))
     return render_template('index.html')
