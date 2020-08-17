@@ -6,6 +6,8 @@ from datetime import datetime
 
 import logging
 
+logging.basicConfig(filename='actions.log', filemode='w', format='%(asctime)s - %(message)s', level=logging.INFO)
+
 UPLOAD_FOLDER = './uploads'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
 
@@ -44,6 +46,8 @@ def get_data_udv(data):
     print(iin)
     print(doc_num)
     print(datas)
+
+    return datas
 
 def calculate_iin(data):
     if len(data) == 12:
@@ -110,11 +114,23 @@ def upload_file():
 
             file.save(os.path.join(f'{app.config["UPLOAD_FOLDER"]}/', filename))
 
-            doc = photo_recog(filename)
-            get_data_udv(doc)
+            try:
+                doc = photo_recog(filename)
+            except Exception:
+                logging.error(Exception)
+            else:
+                try:
+                    iin_data = get_data_udv(doc)
+                    logging.info('Received data from udv')
+                except Exception:
+                    logging.error('Error reading IIN')
+                    logging.error(Exception)
+                    iin_data = None
 
             return redirect(url_for('upload_file', filename=filename))
-    return render_template('index.html')
+    return render_template('index.html',
+                           title="Upload file",
+                           description="Smarter page templates \ with Flask & Jinja.")
 
 
 if __name__ == '__main__':
